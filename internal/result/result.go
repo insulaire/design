@@ -1,11 +1,13 @@
 package result
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type response struct {
-	Code int
-	Msg  string
-	Data interface{}
+	Code int         `json:"code"`
+	Msg  string      `json:"msg"`
+	Data interface{} `json:"data"`
 }
 
 func (resp *response) ToString() string {
@@ -15,20 +17,31 @@ func (resp *response) ToString() string {
 
 type ResultOptions func(*response)
 
-func ResultWithData(data interface{}) ResultOptions {
+func WithData(data interface{}) ResultOptions {
 	return func(r *response) {
 		r.Data = data
 	}
 }
 
-func ResultWithMsg(msg string) ResultOptions {
+type Paging struct {
+	Count int         `json:"count"`
+	Data  interface{} `json:"data"`
+}
+
+func WithPagingData(data interface{}, count int) ResultOptions {
+	return func(r *response) {
+		r.Data = Paging{Count: count, Data: data}
+	}
+}
+
+func WithMsg(msg string) ResultOptions {
 	return func(r *response) {
 		r.Msg = msg
 	}
 }
 
-func Result(code int, opts ...ResultOptions) response {
-	res := &response{}
+func new(code int, msg string, opts ...ResultOptions) response {
+	res := &response{Code: code, Msg: msg}
 	for _, v := range opts {
 		v(res)
 	}
@@ -36,17 +49,10 @@ func Result(code int, opts ...ResultOptions) response {
 }
 
 func SueccResult(opts ...ResultOptions) response {
-	res := &response{Code: 1, Msg: "执行成功"}
-	for _, v := range opts {
-		v(res)
-	}
-	return *res
+	return new(1, "操作成功", opts...)
+
 }
 
 func FailureResult(opts ...ResultOptions) response {
-	res := &response{Code: 0, Msg: "执行失败"}
-	for _, v := range opts {
-		v(res)
-	}
-	return *res
+	return new(0, "操作失败", opts...)
 }

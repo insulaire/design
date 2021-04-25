@@ -9,7 +9,7 @@ import (
 
 func Ping() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, result.Result(1, result.ResultWithMsg("ok")))
+		c.JSON(http.StatusOK, result.SueccResult())
 	}
 
 }

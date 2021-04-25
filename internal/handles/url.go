@@ -1,11 +1,9 @@
 package handles
 
 import (
-	"crypto/md5"
 	"design/internal/entities"
 	"design/internal/result"
-	"fmt"
-	"io"
+	"design/pkg/md5"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,15 +14,12 @@ func GetPath() gin.HandlerFunc {
 		urlPath := entities.UrlPath{}
 		c.BindJSON(&urlPath)
 		if token, err := GetToken(c); err != nil {
-			c.JSON(http.StatusOK, result.FailureResult(result.ResultWithMsg(err.Error())))
+			c.JSON(http.StatusOK, result.FailureResult(result.WithMsg(err.Error())))
 			return
 		} else {
 			urlPath.WithToken(token)
 		}
-
-		hash := md5.New()
-		io.WriteString(hash, urlPath.String())
-		url := fmt.Sprintf("%x", hash.Sum([]byte{}))
-		c.JSON(http.StatusOK, result.SueccResult(result.ResultWithData(url)))
+		url := md5.New(urlPath.Path)
+		c.JSON(http.StatusOK, result.SueccResult(result.WithData(url)))
 	}
 }
